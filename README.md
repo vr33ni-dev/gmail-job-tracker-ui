@@ -56,15 +56,3 @@ The demo uses sample data — [set up the full version](#setup) to track your ow
 ## License
 
 MIT
-
-## TODO
-
-### GitHub Pages demo auto-deploy from React frontend
-
-Currently the GitHub Pages demo (`docs/index.html`) is a standalone HTML file that must be manually updated when the frontend changes.
-
-Planned improvement:
-
-- Build the React frontend with `VITE_DEMO_MODE=true` in CI
-- Swap API calls for mock data when demo mode is enabled (`src/mockData.ts` + `src/api.ts`)
-- GitHub Actions workflow builds and deploys `jobtracker-frontend/dist/` to Pages automatically on every push to `master`

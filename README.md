@@ -47,6 +47,12 @@ Open [http://localhost:5173](http://localhost:5173) to view the app in your brow
 npm run build
 ```
 
+## Live Demo
+
+👉 [https://vr33ni-dev.github.io/gmail-job-tracker](https://vr33ni-dev.github.io/gmail-job-tracker)
+
+The demo uses sample data — [set up the full version](#setup) to track your own applications.
+
 ## License
 
 MIT

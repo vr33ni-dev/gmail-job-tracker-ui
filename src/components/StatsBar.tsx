@@ -6,19 +6,31 @@ interface Props {
 
 export function StatsBar({ applications }: Props) {
   const total = applications.length;
-  const active = applications.filter((a) =>
-    ["applied", "screening", "interview"].includes(a.status),
+
+  const active = applications.filter(
+    (a) =>
+      a.stages.some((s) => s.status === "applied") &&
+      !a.stages.some((s) =>
+        ["rejected", "withdrawn", "offer"].includes(s.status),
+      ),
   ).length;
-  const interviews = applications.filter(
-    (a) => a.status === "interview",
+
+  const interviews = applications.filter((a) =>
+    a.stages.some(
+      (s) => s.status === "interview" || s.status === "ai_interview",
+    ),
   ).length;
-  const offers = applications.filter((a) => a.status === "offer").length;
+
+  const offers = applications.filter((a) =>
+    a.stages.some((s) => s.status === "offer"),
+  ).length;
+
   const responseRate =
     total === 0
       ? 0
       : Math.round(
-          (applications.filter(
-            (a) => a.status !== "applied" && a.status !== "no_response",
+          (applications.filter((a) =>
+            a.stages.some((s) => s.status !== "applied"),
           ).length /
             total) *
             100,
@@ -33,13 +45,7 @@ export function StatsBar({ applications }: Props) {
   ];
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "12px",
-        padding: "0 32px 24px",
-      }}
-    >
+    <div style={{ display: "flex", gap: "12px", padding: "0 32px 24px" }}>
       {stats.map((s) => (
         <div
           key={s.label}

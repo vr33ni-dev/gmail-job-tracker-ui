@@ -4,7 +4,6 @@ import {
   STATUS_COLUMNS,
   STATUS_LABELS,
   STATUS_COLORS,
-  type Status,
 } from "../types";
 import { ApplicationCard } from "./ApplicationCard";
 import { EmailModal } from "./EmailModal";
@@ -14,7 +13,8 @@ interface Props {
 }
 
 export function KanbanBoard({ applications }: Props) {
-  const [selected, setSelected] = useState<Application | null>(null); // must be here
+  const [selected, setSelected] = useState<Application | null>(null);
+
   return (
     <div
       style={{
@@ -27,7 +27,14 @@ export function KanbanBoard({ applications }: Props) {
       }}
     >
       {STATUS_COLUMNS.map((status) => {
-        const cards = applications.filter((a) => a.status === status);
+        // expand each application into one card per unique status in its stages
+        const columnCards = applications.filter(
+          (app) =>
+            app.stages.some((s) => s.status === status) &&
+            // deduplicate: only show once per status
+            app.stages.findIndex((s) => s.status === status) !== -1,
+        );
+
         const colors = STATUS_COLORS[status];
 
         return (
@@ -74,13 +81,13 @@ export function KanbanBoard({ applications }: Props) {
                   padding: "2px 8px",
                 }}
               >
-                {cards.length}
+                {columnCards.length}
               </span>
             </div>
 
             {/* Cards */}
             <div style={{ flex: 1 }}>
-              {cards.length === 0 ? (
+              {columnCards.length === 0 ? (
                 <div
                   style={{
                     border: "1px dashed var(--border)",
@@ -94,10 +101,11 @@ export function KanbanBoard({ applications }: Props) {
                   No applications
                 </div>
               ) : (
-                cards.map((app) => (
+                columnCards.map((app) => (
                   <ApplicationCard
-                    key={app.id}
+                    key={`${app.company}|${app.role}|${status}`}
                     application={app}
+                    columnStatus={status}
                     onClick={() => setSelected(app)}
                   />
                 ))
@@ -106,6 +114,7 @@ export function KanbanBoard({ applications }: Props) {
           </div>
         );
       })}
+
       {selected && (
         <EmailModal application={selected} onClose={() => setSelected(null)} />
       )}

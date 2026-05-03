@@ -1,8 +1,10 @@
-import { type Application, STATUS_COLORS, STATUS_LABELS } from "../types";
+import type { Application } from "../types";
+import { type Status, STATUS_COLORS, STATUS_LABELS } from "../types";
 
 interface Props {
   application: Application;
   onClick: () => void;
+  columnStatus: Status;
 }
 
 function timeAgo(dateStr: string): string {
@@ -25,10 +27,22 @@ const PLATFORM_ICONS: Record<string, string> = {
   email: "📧",
   direct: "🌐",
   other: "📋",
+  greenhouse: "🌱",
+  lever: "⚙️",
+  softgarden: "🌿",
 };
 
-export function ApplicationCard({ application: app, onClick }: Props) {
-  const colors = STATUS_COLORS[app.status];
+export function ApplicationCard({
+  application: app,
+  onClick,
+  columnStatus,
+}: Props) {
+  const colors = STATUS_COLORS[columnStatus];
+  const stages = app.stages ?? [];
+  const statusCount = stages.filter((s) => s.status === columnStatus).length;
+  const hasTimeline = stages.length > 1;
+  const stageDate =
+    stages.find((s) => s.status === columnStatus)?.applied_at ?? app.applied_at;
 
   return (
     <div
@@ -39,9 +53,8 @@ export function ApplicationCard({ application: app, onClick }: Props) {
         borderRadius: "12px",
         padding: "14px",
         marginBottom: "8px",
-        cursor: "default",
+        cursor: "pointer",
         transition: "border-color 0.2s, transform 0.2s",
-        animation: "slideIn 0.2s ease",
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLDivElement).style.borderColor = colors.border;
@@ -87,7 +100,66 @@ export function ApplicationCard({ application: app, onClick }: Props) {
             {app.role}
           </div>
         </div>
+        {statusCount > 1 && (
+          <span
+            style={{
+              background: colors.bg,
+              border: `1px solid ${colors.border}`,
+              color: colors.text,
+              fontSize: "10px",
+              fontWeight: 700,
+              borderRadius: "20px",
+              padding: "2px 8px",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            ×{statusCount}
+          </span>
+        )}
       </div>
+
+      {/* Timeline dots */}
+      {hasTimeline && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            marginTop: "10px",
+          }}
+        >
+          {stages.map((stage, i) => {
+            const c = STATUS_COLORS[stage.status] ?? STATUS_COLORS["applied"];
+            return (
+              <div
+                key={stage.id}
+                style={{ display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <div
+                  title={STATUS_LABELS[stage.status]}
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    background: c.text,
+                    flexShrink: 0,
+                  }}
+                />
+                {i < stages.length - 1 && (
+                  <div
+                    style={{
+                      width: "12px",
+                      height: "1px",
+                      background: "var(--border)",
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div
         style={{
@@ -104,7 +176,7 @@ export function ApplicationCard({ application: app, onClick }: Props) {
           </span>
         </span>
         <span style={{ fontSize: "10px", color: "var(--muted)" }}>
-          {timeAgo(app.applied_at)}
+          {timeAgo(stageDate)}
         </span>
       </div>
 

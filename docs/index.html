@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JobTracker — Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #070910;
+        --surface: #0d0f18;
+        --border: #1a1d2e;
+        --accent: #5b8dee;
+        --accent-dim: rgba(91, 141, 238, 0.1);
+        --text: #e2e8f0;
+        --muted: #4a5068;
+        --font: "DM Sans", sans-serif;
+        --mono: "DM Mono", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+      }
+
+      /* Demo banner */
+      .demo-banner {
+        background: linear-gradient(
+          90deg,
+          rgba(91, 141, 238, 0.15),
+          rgba(167, 139, 250, 0.15)
+        );
+        border-bottom: 1px solid rgba(91, 141, 238, 0.2);
+        padding: 10px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .demo-banner strong {
+        color: var(--accent);
+      }
+      .demo-banner a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .demo-banner a:hover {
+        text-decoration: underline;
+      }
+
+      /* Header */
+      header {
+        padding: 20px 32px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .logo {
+        width: 36px;
+        height: 36px;
+        background: var(--accent);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .header-title {
+        flex: 1;
+      }
+      .header-title h1 {
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+      .header-title p {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .header-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .header-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Stats */
+      .stats {
+        display: flex;
+        gap: 12px;
+        padding: 20px 32px;
+      }
+      .stat {
+        flex: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+      }
+      .stat-val {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 6px;
+        font-weight: 500;
+      }
+
+      /* Board */
+      .board {
+        display: flex;
+        gap: 16px;
+        padding: 0 32px 32px;
+        overflow-x: auto;
+        align-items: flex-start;
+      }
+      .column {
+        flex: 0 0 250px;
+        display: flex;
+        flex-direction: column;
+      }
+      .col-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+      }
+      .col-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .col-count {
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 20px;
+        padding: 2px 8px;
+      }
+      .empty {
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* Card */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+        animation: slideIn 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-1px);
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .card-company {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .card-role {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .card-count {
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 20px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .dots {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 10px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .dot-line {
+        width: 12px;
+        height: 1px;
+        background: var(--border);
+      }
+      .card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+      .card-platform {
+        font-size: 12px;
+      }
+      .card-platform span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .card-date {
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.15s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px;
+        width: 580px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+        animation: slideUp 0.2s ease;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+      .modal-company {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .modal-role {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .modal-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .close-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        padding: 2px;
+        margin-left: 8px;
+      }
+      .modal-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: var(--bg);
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .journey-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+      .journey {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 16px;
+      }
+      .journey-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: 1px solid transparent;
+      }
+      .journey-item:hover {
+        background: rgba(91, 141, 238, 0.06);
+      }
+      .journey-item.active {
+        background: rgba(91, 141, 238, 0.1);
+        border-color: var(--accent);
+      }
+      .journey-badge {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .journey-date {
+        color: var(--muted);
+        flex: 1;
+        font-size: 11px;
+      }
+      .journey-icon {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .email-body {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--bg);
+        border-radius: 8px;
+        padding: 16px;
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid var(--border);
+        font-family: var(--font);
+      }
+      .email-empty {
+        color: var(--muted);
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-banner">
+      <span
+        >🔍 <strong>Demo Mode</strong> — showing sample data.
+        <a href="https://github.com/vr33ni-dev/gmail-job-tracker"
+          >View on GitHub</a
+        >
+        to set up with your own Gmail.</span
+      >
+      <span>Built with Go + React + Claude AI</span>
+    </div>
+
+    <header>
+      <div class="logo">📬</div>
+      <div class="header-title">
+        <h1>JobTracker</h1>
+        <p>Gmail-powered application tracker</p>
+      </div>
+      <button
+        class="header-btn"
+        onclick="alert('Connect your Gmail to enable live sync!')"
+      >
+        ⟳ Sync Gmail
+      </button>
+    </header>
+
+    <div class="stats" id="stats"></div>
+    <div class="board" id="board"></div>
+    <div id="modal-container"></div>
+
+    <script>
+      const STATUS_COLORS = {
+        applied: {
+          bg: "rgba(91,141,238,0.12)",
+          text: "#5b8dee",
+          border: "rgba(91,141,238,0.3)",
+        },
+        interview: {
+          bg: "rgba(167,139,250,0.12)",
+          text: "#a78bfa",
+          border: "rgba(167,139,250,0.3)",
+        },
+        ai_interview: {
+          bg: "rgba(99,102,241,0.12)",
+          text: "#818cf8",
+          border: "rgba(99,102,241,0.3)",
+        },
+        offer: {
+          bg: "rgba(52,211,153,0.12)",
+          text: "#34d399",
+          border: "rgba(52,211,153,0.3)",
+        },
+        rejected: {
+          bg: "rgba(248,113,113,0.12)",
+          text: "#f87171",
+          border: "rgba(248,113,113,0.3)",
+        },
+        withdrawn: {
+          bg: "rgba(107,114,128,0.12)",
+          text: "#9ca3af",
+          border: "rgba(107,114,128,0.3)",
+        },
+      };
+
+      const STATUS_LABELS = {
+        applied: "Applied",
+        interview: "Interview",
+        ai_interview: "AI Interview",
+        offer: "Offer",
+        rejected: "Rejected",
+        withdrawn: "Withdrawn",
+      };
+
+      const STATUS_COLUMNS = [
+        "applied",
+        "interview",
+        "ai_interview",
+        "offer",
+        "rejected",
+        "withdrawn",
+      ];
+
+      const PLATFORM_ICONS = {
+        linkedin: "💼",
+        upwork: "🔧",
+        email: "📧",
+        direct: "🌐",
+        other: "📋",
+        greenhouse: "🌱",
+        lever: "⚙️",
+        softgarden: "🌿",
+      };
+
+      const data = [
+        {
+          company: "Acme Corp",
+          role: "Senior Software Engineer",
+          platform: "linkedin",
+          current_status: "rejected",
+          applied_at: "2026-01-15T10:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 1,
+              status: "applied",
+              applied_at: "2026-01-15T10:00:00Z",
+              email_body:
+                "Thank you for applying to the Senior Software Engineer position at Acme Corp. We have received your application and our team will review it shortly. We appreciate your interest in joining our team.",
+              last_email_id: "1",
+            },
+            {
+              id: 2,
+              status: "interview",
+              applied_at: "2026-01-28T14:30:00Z",
+              email_body:
+                "Hi,\n\nThank you for your application! We were impressed by your profile and would love to schedule an interview.\n\nAre you available for a 45-minute video call?\n\nJoin: https://meet.google.com/abc-defg-hij\n\nBest,\nSarah Chen\nTalent Partner",
+              last_email_id: "2",
+            },
+            {
+              id: 3,
+              status: "rejected",
+              applied_at: "2026-02-10T09:00:00Z",
+              email_body:
+                "Hi,\n\nThank you for interviewing with us. After careful consideration, we have decided to move forward with other candidates whose experience more closely matches our current needs.\n\nWe appreciate your interest and wish you the best.\n\nThe Acme Team",
+              last_email_id: "3",
+            },
+          ],
+        },
+        {
+          company: "TechFlow GmbH",
+          role: "Full Stack Developer",
+          platform: "direct",
+          current_status: "interview",
+          applied_at: "2026-01-20T09:00:00Z",
+          language: "de",
+          url: "",
+          stages: [
+            {
+              id: 4,
+              status: "applied",
+              applied_at: "2026-01-20T09:00:00Z",
+              email_body:
+                "Hallo,\n\nVielen Dank für Ihre Bewerbung als Full Stack Developer bei TechFlow GmbH. Wir haben Ihre Unterlagen erhalten und werden diese sorgfältig prüfen.\n\nMit freundlichen Grüßen\nHR Team TechFlow",
+              last_email_id: "4",
+            },
+            {
+              id: 5,
+              status: "interview",
+              applied_at: "2026-02-03T11:00:00Z",
+              email_body:
+                "Hallo,\n\nWir freuen uns, Sie zu einem Vorstellungsgespräch einladen zu dürfen!\n\nTerminbuchung: https://calendly.com/techflow/interview\n\nDas Gespräch findet via Microsoft Teams statt (~60 Minuten).\n\nFreundliche Grüße\nAnna Müller\nRecruiting TechFlow GmbH",
+              last_email_id: "5",
+            },
+          ],
+        },
+        {
+          company: "NovaSpark",
+          role: "Backend Engineer",
+          platform: "greenhouse",
+          current_status: "offer",
+          applied_at: "2026-02-01T08:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 6,
+              status: "applied",
+              applied_at: "2026-02-01T08:00:00Z",
+              email_body:
+                "Thank you for applying to the Backend Engineer role at NovaSpark. We have successfully received your application and will be in touch soon.",
+              last_email_id: "6",
+            },
+            {
+              id: 7,
+              status: "interview",
+              applied_at: "2026-02-12T15:00:00Z",
+              email_body:
+                "Hi,\n\nWe reviewed your application and would love to move forward!\n\nPlease book a slot: https://app.greenhouse.io/schedule/novaspark\n\nThe interview will be via Zoom, ~90 minutes.\n\nExcited to meet you!\nMarcus Webb\nEngineering Lead",
+              last_email_id: "7",
+            },
+            {
+              id: 8,
+              status: "interview",
+              applied_at: "2026-02-25T10:00:00Z",
+              email_body:
+                "Hi,\n\nGreat news — the team loved meeting you! We'd like to invite you to a final round with our CTO.\n\nJoin Zoom: https://zoom.us/j/123456789\n\nThis will be a 60-minute culture and vision conversation.\n\nBest,\nMarcus",
+              last_email_id: "8",
+            },
+            {
+              id: 9,
+              status: "offer",
+              applied_at: "2026-03-05T14:00:00Z",
+              email_body:
+                "Hi,\n\nWe are thrilled to extend an offer for the Backend Engineer position at NovaSpark!\n\nPlease find the attached offer letter with details on compensation, benefits, and start date.\n\nPlease let us know your decision by March 12th.\n\nWarmly,\nMarcus Webb",
+              last_email_id: "9",
+            },
+          ],
+        },
+        {
+          company: "Deepmind Systems",
+          role: "AI Infrastructure Engineer",
+          platform: "linkedin",
+          current_status: "applied",
+          applied_at: "2026-03-01T12:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 10,
+              status: "applied",
+              applied_at: "2026-03-01T12:00:00Z",
+              email_body:
+                "Thank you for your application for the AI Infrastructure Engineer position at Deepmind Systems. Our recruiting team will review your profile and reach out if there's a match.\n\nDeepMind Recruiting",
+              last_email_id: "10",
+            },
+          ],
+        },
+        {
+          company: "Pulse Analytics",
+          role: "Senior Go Developer",
+          platform: "direct",
+          current_status: "rejected",
+          applied_at: "2026-01-10T09:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 11,
+              status: "applied",
+              applied_at: "2026-01-10T09:00:00Z",
+              email_body:
+                "Thanks for applying to Pulse Analytics! We've received your application for the Senior Go Developer role and will review it shortly.",
+              last_email_id: "11",
+            },
+            {
+              id: 12,
+              status: "rejected",
+              applied_at: "2026-01-24T16:00:00Z",
+              email_body:
+                "Hi,\n\nThank you for your interest in Pulse Analytics. Unfortunately, after reviewing your application, we won't be moving forward at this time.\n\nWe'll keep your profile on file for future opportunities.\n\nBest wishes,\nThe Pulse Team",
+              last_email_id: "12",
+            },
+          ],
+        },
+        {
+          company: "micro1",
+          role: "Go Developer",
+          platform: "upwork",
+          current_status: "ai_interview",
+          applied_at: "2026-02-15T10:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 13,
+              status: "applied",
+              applied_at: "2026-02-15T10:00:00Z",
+              email_body:
+                "Thank you for your interest in contributing to AI training projects with micro1. We have received your application and will review your profile shortly.",
+              last_email_id: "13",
+            },
+            {
+              id: 14,
+              status: "ai_interview",
+              applied_at: "2026-02-20T09:00:00Z",
+              email_body:
+                "Hi,\n\nYou're one step away from moving forward with micro1 for the Go Developer role.\n\nYour next step is to complete your AI interview. It takes about 30 minutes.\n\nStart here: https://www.interview.micro1.ai\n\nBest,\nmicro1 Team",
+              last_email_id: "14",
+            },
+          ],
+        },
+        {
+          company: "Grafana Labs",
+          role: "Backend Software Engineer",
+          platform: "greenhouse",
+          current_status: "applied",
+          applied_at: "2026-02-20T11:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 15,
+              status: "applied",
+              applied_at: "2026-02-20T11:00:00Z",
+              email_body:
+                "Thank you for applying to Grafana Labs! We've received your application for the Backend Software Engineer role. Our team will review your profile and be in touch.\n\nThe Grafana Labs Recruiting Team",
+              last_email_id: "15",
+            },
+          ],
+        },
+        {
+          company: "Checkly",
+          role: "Senior Backend Engineer",
+          platform: "direct",
+          current_status: "rejected",
+          applied_at: "2026-01-25T14:00:00Z",
+          language: "en",
+          url: "",
+          stages: [
+            {
+              id: 16,
+              status: "applied",
+              applied_at: "2026-01-25T14:00:00Z",
+              email_body:
+                "Thanks for your application to Checkly! We're excited to review your profile for the Senior Backend Engineer position.",
+              last_email_id: "16",
+            },
+            {
+              id: 17,
+              status: "rejected",
+              applied_at: "2026-02-08T10:00:00Z",
+              email_body:
+                "Hi,\n\nThank you for your interest in Checkly and for taking the time to apply. Unfortunately, we've decided to move forward with other candidates.\n\nWe'll keep your profile on file for future opportunities.\n\nBest,\nCheckly Team",
+              last_email_id: "17",
+            },
+          ],
+        },
+      ];
+
+      function timeAgo(dateStr) {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const days = Math.floor(diff / 86400000);
+        if (days < 1) return "today";
+        if (days === 1) return "yesterday";
+        if (days < 7) return `${days}d ago`;
+        if (days < 30) return `${Math.floor(days / 7)}w ago`;
+        if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+        return `${Math.floor(days / 365)}y ago`;
+      }
+
+      function renderStats() {
+        const total = data.length;
+        const interviews = data.filter((a) =>
+          a.stages.some(
+            (s) => s.status === "interview" || s.status === "ai_interview",
+          ),
+        ).length;
+        const offers = data.filter((a) =>
+          a.stages.some((s) => s.status === "offer"),
+        ).length;
+        const active = data.filter(
+          (a) =>
+            !a.stages.some((s) =>
+              ["rejected", "withdrawn", "offer"].includes(s.status),
+            ),
+        ).length;
+        const responseRate =
+          total === 0
+            ? 0
+            : Math.round(
+                (data.filter((a) =>
+                  a.stages.some((s) => s.status !== "applied"),
+                ).length /
+                  total) *
+                  100,
+              );
+
+        const stats = [
+          { label: "Total", value: total },
+          { label: "Active", value: active },
+          { label: "Interviews", value: interviews },
+          { label: "Offers", value: offers },
+          { label: "Response Rate", value: `${responseRate}%` },
+        ];
+
+        document.getElementById("stats").innerHTML = stats
+          .map(
+            (s) => `
+    <div class="stat">
+      <div class="stat-val">${s.value}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      function renderBoard() {
+        const board = document.getElementById("board");
+        board.innerHTML = STATUS_COLUMNS.map((status) => {
+          const cards = data.filter((app) =>
+            app.stages.some((s) => s.status === status),
+          );
+          const c = STATUS_COLORS[status];
+
+          return `
+      <div class="column">
+        <div class="col-header" style="background:${c.bg};border:1px solid ${c.border}">
+          <span class="col-title" style="color:${c.text}">${STATUS_LABELS[status]}</span>
+          <span class="col-count" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${cards.length}</span>
+        </div>
+        <div>
+          ${
+            cards.length === 0
+              ? '<div class="empty">No applications</div>'
+              : cards.map((app) => renderCard(app, status)).join("")
+          }
+        </div>
+      </div>
+    `;
+        }).join("");
+      }
+
+      function renderCard(app, columnStatus) {
+        const c = STATUS_COLORS[columnStatus];
+        const statusCount = app.stages.filter(
+          (s) => s.status === columnStatus,
+        ).length;
+        const stageDate = (
+          app.stages.find((s) => s.status === columnStatus) || app.stages[0]
+        ).applied_at;
+        const icon = PLATFORM_ICONS[app.platform] || "📋";
+
+        const dots =
+          app.stages.length > 1
+            ? `
+    <div class="dots">
+      ${app.stages
+        .map(
+          (stage, i) => `
+        <div class="dot" style="background:${STATUS_COLORS[stage.status].text}" title="${STATUS_LABELS[stage.status]}"></div>
+        ${i < app.stages.length - 1 ? '<div class="dot-line"></div>' : ""}
+      `,
+        )
+        .join("")}
+    </div>
+  `
+            : "";
+
+        const countBadge =
+          statusCount > 1
+            ? `<span class="card-count" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">×${statusCount}</span>`
+            : "";
+
+        return `
+    <div class="card" 
+      style="--hover-border:${c.border}"
+      onmouseenter="this.style.borderColor='${c.border}'"
+      onmouseleave="this.style.borderColor='var(--border)'"
+      onclick="openModal('${app.company}','${app.role}')">
+      <div class="card-top">
+        <div style="flex:1;min-width:0">
+          <div class="card-company">${app.company}</div>
+          <div class="card-role">${app.role || '<span style="color:var(--muted);font-style:italic">Role not specified</span>'}</div>
+        </div>
+        ${countBadge}
+      </div>
+      ${dots}
+      <div class="card-meta">
+        <span class="card-platform">${icon} <span>${app.platform}</span></span>
+        <span class="card-date">${timeAgo(stageDate)}</span>
+      </div>
+    </div>
+  `;
+      }
+
+      let selectedStageId = null;
+
+      function openModal(company, role) {
+        const app = data.find((a) => a.company === company && a.role === role);
+        if (!app) return;
+
+        selectedStageId = app.stages[app.stages.length - 1].id;
+        renderModal(app);
+      }
+
+      function renderModal(app) {
+        const c = STATUS_COLORS[app.current_status];
+        const selectedStage =
+          app.stages.find((s) => s.id === selectedStageId) ||
+          app.stages[app.stages.length - 1];
+
+        const journey =
+          app.stages.length > 1
+            ? `
+    <div class="journey-label">Journey</div>
+    <div class="journey">
+      ${app.stages
+        .map((stage) => {
+          const sc = STATUS_COLORS[stage.status];
+          const isActive = stage.id === selectedStageId;
+          return `
+          <div class="journey-item ${isActive ? "active" : ""}" onclick="selectStage('${app.company}','${app.role}',${stage.id})">
+            <span class="journey-badge" style="background:${sc.bg};color:${sc.text};border:1px solid ${sc.border}">${STATUS_LABELS[stage.status]}</span>
+            <span class="journey-date">${new Date(stage.applied_at).toLocaleDateString()}</span>
+            ${stage.email_body ? '<span class="journey-icon">📧</span>' : ""}
+          </div>
+        `;
+        })
+        .join("")}
+    </div>
+  `
+            : "";
+
+        document.getElementById("modal-container").innerHTML = `
+    <div class="modal-overlay" onclick="closeModal(event)">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <div class="modal-company">${app.company}</div>
+            <div class="modal-role">${app.role || "Role not specified"}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span class="modal-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${STATUS_LABELS[app.current_status]}</span>
+            <button class="close-btn" onclick="document.getElementById('modal-container').innerHTML=''">✕</button>
+          </div>
+        </div>
+        <div class="modal-meta">
+          <span>📅 ${new Date(app.applied_at).toLocaleDateString()}</span>
+          <span>🔗 ${app.platform}</span>
+          <span>${app.language === "de" ? "🇩🇪 German" : "🇬🇧 English"}</span>
+        </div>
+        ${journey}
+        <div class="email-body">
+          ${
+            selectedStage?.email_body
+              ? selectedStage.email_body
+              : '<span class="email-empty">No email content available.</span>'
+          }
+        </div>
+      </div>
+    </div>
+  `;
+      }
+
+      function selectStage(company, role, stageId) {
+        selectedStageId = stageId;
+        const app = data.find((a) => a.company === company && a.role === role);
+        if (app) renderModal(app);
+      }
+
+      function closeModal(e) {
+        if (e.target.classList.contains("modal-overlay")) {
+          document.getElementById("modal-container").innerHTML = "";
+        }
+      }
+
+      renderStats();
+      renderBoard();
+    </script>
+  </body>
+</html>

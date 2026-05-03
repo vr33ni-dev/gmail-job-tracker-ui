@@ -10,6 +10,11 @@ export const fetchApplications = async (): Promise<Application[]> => {
   return data;
 };
 
+export const fetchEvents = async (applicationId: number) => {
+  const { data } = await api.get(`/api/applications/${applicationId}/events`);
+  return data;
+};
+
 export const createApplication = async (
   app: NewApplication,
 ): Promise<Application> => {

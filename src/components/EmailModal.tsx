@@ -196,6 +196,21 @@ export function EmailModal({ application: app, onClose }: Props) {
                     >
                       {new Date(stage.applied_at).toLocaleDateString()}
                     </span>
+                    {stage.last_email_id && (
+                      <a
+                        href={`https://mail.google.com/mail/u/0/#inbox/${stage.last_email_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          color: "var(--accent)",
+                          fontSize: "10px",
+                          textDecoration: "none",
+                        }}
+                      >
+                        ↗ Gmail
+                      </a>
+                    )}
                     {stage.email_body && (
                       <span style={{ color: "var(--muted)", fontSize: "10px" }}>
                         📧

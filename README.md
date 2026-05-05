@@ -26,6 +26,7 @@ A simple Kanban-style web application for tracking job applications using your G
 
 - Node.js (v18 or later recommended)
 - npm or yarn
+- Server up and running (--> [Backend setup](https://github.com/vr33ni-dev/gmail-job-tracker))
 
 ### Installation
 

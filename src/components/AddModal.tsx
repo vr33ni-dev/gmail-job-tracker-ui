@@ -25,12 +25,17 @@ export function AddModal({ onAdd, onClose }: Props) {
     applied_at: new Date().toISOString(),
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const set = (field: keyof NewApplication, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   const handleSubmit = async () => {
-    if (!form.company || !form.role) return;
+    if (!form.company || !form.role) {
+      setError("Company and Role are required.");
+      return;
+    }
+    setError(null);
     setLoading(true);
     try {
       await onAdd(form);
@@ -208,6 +213,17 @@ export function AddModal({ onAdd, onClose }: Props) {
           </div>
         </div>
 
+        {error && (
+          <p
+            style={{
+              margin: "0 0 12px",
+              fontSize: "12px",
+              color: "#f87171",
+            }}
+          >
+            {error}
+          </p>
+        )}
         <div
           style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}
         >

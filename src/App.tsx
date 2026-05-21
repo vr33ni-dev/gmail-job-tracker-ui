@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Application, NewApplication } from "./types";
-import { fetchApplications, createApplication, triggerSync, IS_DEMO_MODE } from "./api";
+import {
+  fetchApplications,
+  createApplication,
+  triggerSync,
+  IS_DEMO_MODE,
+} from "./api";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { StatsBar } from "./components/StatsBar";
 import { AddModal } from "./components/AddModal";
@@ -154,7 +159,8 @@ export default function App() {
             textAlign: "center",
           }}
         >
-          🎭 Demo mode — showing sample data. Connect a backend to track real applications.
+          🎭 Demo mode — showing sample data. Connect a backend to track real
+          applications.
         </div>
       )}
 
@@ -177,7 +183,12 @@ export default function App() {
           Loading...
         </div>
       ) : (
-        <KanbanBoard applications={applications} />
+        <KanbanBoard
+          applications={applications}
+          onRefresh={() => {
+            fetchApplications().then(setApplications);
+          }}
+        />
       )}
 
       {showAdd && (

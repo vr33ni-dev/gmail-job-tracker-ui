@@ -12,11 +12,13 @@ export interface ApplicationStage {
   applied_at: string;
   email_body: string;
   last_email_id: string;
+  needs_review: boolean;
 }
-
 export interface Application {
+  id: number;
   company: string;
   role: string;
+  gmail_url: string;
   platform: string;
   language: string;
   url: string;
@@ -34,14 +36,21 @@ export interface NewApplication {
   applied_at: string;
 }
 
-export interface StatusEvent {
+export interface ThreadEmail {
   id: number;
-  application_id: number;
-  from_status: Status;
-  to_status: Status;
   email_id: string;
-  email_subject: string;
-  parsed_at: string;
+  thread_id: string;
+  stage_id: number;
+  from_addr: string;
+  subject: string;
+  body: string;
+  email_date: string;
+  is_stage: boolean;
+}
+
+export interface StageJourney {
+  stage: ThreadEmail;
+  conversation: ThreadEmail[];
 }
 
 export const STATUS_COLUMNS: Status[] = [
@@ -52,6 +61,23 @@ export const STATUS_COLUMNS: Status[] = [
   "rejected",
   "withdrawn",
 ];
+
+export function isInferredApplied(stage: ApplicationStage): boolean {
+  return stage.status === "applied" && stage.last_email_id === "";
+}
+
+const STAGE_STATUS_ORDER: Record<Status, number> = Object.fromEntries(
+  STATUS_COLUMNS.map((s, i) => [s, i]),
+) as Record<Status, number>;
+
+export function sortStages(stages: ApplicationStage[]): ApplicationStage[] {
+  return [...stages].sort((a, b) => {
+    const orderDiff =
+      STAGE_STATUS_ORDER[a.status] - STAGE_STATUS_ORDER[b.status];
+    if (orderDiff !== 0) return orderDiff;
+    return new Date(a.applied_at).getTime() - new Date(b.applied_at).getTime();
+  });
+}
 
 export const STATUS_LABELS: Record<Status, string> = {
   applied: "Applied",

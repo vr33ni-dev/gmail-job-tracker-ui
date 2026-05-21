@@ -1,10 +1,17 @@
 import type { Application } from "../types";
-import { type Status, STATUS_COLORS, STATUS_LABELS } from "../types";
+import {
+  type Status,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  isInferredApplied,
+  sortStages,
+} from "../types";
 
 interface Props {
   application: Application;
   onClick: () => void;
   columnStatus: Status;
+  onDelete: (stageId: number) => void;
 }
 
 function timeAgo(dateStr: string): string {
@@ -21,29 +28,36 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 365)}y ago`;
 }
 
-const PLATFORM_ICONS: Record<string, string> = {
-  linkedin: "💼",
-  upwork: "🔧",
-  email: "📧",
-  direct: "🌐",
-  other: "📋",
-  greenhouse: "🌱",
-  lever: "⚙️",
-  softgarden: "🌿",
-};
-
 export function ApplicationCard({
   application: app,
   onClick,
   columnStatus,
+  onDelete,
 }: Props) {
   const colors = STATUS_COLORS[columnStatus];
-  const stages = app.stages ?? [];
+  const stages = sortStages(app.stages ?? []);
   const statusCount = stages.filter((s) => s.status === columnStatus).length;
   const hasTimeline = stages.length > 1;
   const stageDate =
     stages.find((s) => s.status === columnStatus)?.applied_at ?? app.applied_at;
-
+  const lastUpdateDate = (() => {
+    // Use the most recent valid `applied_at` from stages; fallback to app.applied_at only if none.
+    let latestStageDate = "";
+    for (const s of stages) {
+      const currentTime = new Date(s.applied_at).getTime();
+      if (isNaN(currentTime)) continue;
+      const latestTime = latestStageDate
+        ? new Date(latestStageDate).getTime()
+        : NaN;
+      if (isNaN(latestTime) || currentTime > latestTime) {
+        latestStageDate = s.applied_at;
+      }
+    }
+    if (latestStageDate) return latestStageDate;
+    return app.applied_at;
+  })();
+  const columnStage = stages.find((s) => s.status === columnStatus);
+  const needsReview = columnStage?.needs_review ?? false;
   return (
     <div
       onClick={onClick}
@@ -55,6 +69,8 @@ export function ApplicationCard({
         marginBottom: "8px",
         cursor: "pointer",
         transition: "border-color 0.2s, transform 0.2s",
+        width: "100%",
+        boxSizing: "border-box",
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLDivElement).style.borderColor = colors.border;
@@ -99,6 +115,22 @@ export function ApplicationCard({
           >
             {app.role}
           </div>
+          {needsReview && (
+            <span
+              style={{
+                fontSize: "10px",
+                color: "#f59e0b",
+                background: "rgba(245,158,11,0.1)",
+                border: "1px solid rgba(245,158,11,0.3)",
+                borderRadius: "20px",
+                padding: "2px 8px",
+                marginTop: "6px",
+                display: "inline-block",
+              }}
+            >
+              ⚠ needs review
+            </span>
+          )}
         </div>
         {statusCount > 1 && (
           <span
@@ -131,18 +163,25 @@ export function ApplicationCard({
         >
           {stages.map((stage, i) => {
             const c = STATUS_COLORS[stage.status] ?? STATUS_COLORS["applied"];
+            const inferred = isInferredApplied(stage);
             return (
               <div
                 key={stage.id}
                 style={{ display: "flex", alignItems: "center", gap: "4px" }}
               >
                 <div
-                  title={STATUS_LABELS[stage.status]}
+                  title={
+                    inferred
+                      ? "Applied (estimated) – no confirmation email found"
+                      : STATUS_LABELS[stage.status]
+                  }
                   style={{
                     width: "8px",
                     height: "8px",
                     borderRadius: "50%",
-                    background: c.text,
+                    background: inferred ? "transparent" : c.text,
+                    border: inferred ? `1.5px dashed ${c.text}` : "none",
+                    opacity: inferred ? 0.5 : 1,
                     flexShrink: 0,
                   }}
                 />
@@ -169,14 +208,19 @@ export function ApplicationCard({
           marginTop: "10px",
         }}
       >
-        <span style={{ fontSize: "12px" }}>
-          {PLATFORM_ICONS[app.platform] || "📋"}{" "}
-          <span style={{ color: "var(--muted)", fontSize: "10px" }}>
-            {app.platform}
-          </span>
-        </span>
         <span style={{ fontSize: "10px", color: "var(--muted)" }}>
           {timeAgo(stageDate)}
+          {lastUpdateDate && lastUpdateDate !== stageDate && (
+            <span
+              style={{
+                marginLeft: "8px",
+                color: "var(--muted)",
+                fontSize: "10px",
+              }}
+            >
+              · last update: {timeAgo(lastUpdateDate)}
+            </span>
+          )}
         </span>
       </div>
 
@@ -198,6 +242,29 @@ export function ApplicationCard({
         >
           ↗ {app.url}
         </a>
+      )}
+
+      {columnStage && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(columnStage.id);
+          }}
+          style={{
+            display: "block",
+            marginTop: "8px",
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            fontSize: "10px",
+            color: "var(--muted)",
+            textDecoration: "underline",
+            textDecorationStyle: "dotted",
+          }}
+        >
+          Not a job
+        </button>
       )}
     </div>
   );

@@ -66,9 +66,13 @@ export function isInferredApplied(stage: ApplicationStage): boolean {
   return stage.status === "applied" && stage.last_email_id === "";
 }
 
-const STAGE_STATUS_ORDER: Record<Status, number> = Object.fromEntries(
-  STATUS_COLUMNS.map((s, i) => [s, i]),
-) as Record<Status, number>;
+export interface ApplicationFilter {
+  company?: string;
+  from?: string; // ISO date string, e.g. "2025-01-01"
+  to?: string;
+  sort_by?: "company" | "applied_at";
+  sort_dir?: "asc" | "desc";
+}
 
 export function sortStages(stages: ApplicationStage[]): ApplicationStage[] {
   return [...stages].sort((a, b) => {
@@ -78,6 +82,10 @@ export function sortStages(stages: ApplicationStage[]): ApplicationStage[] {
     return new Date(a.applied_at).getTime() - new Date(b.applied_at).getTime();
   });
 }
+
+const STAGE_STATUS_ORDER: Record<Status, number> = Object.fromEntries(
+  STATUS_COLUMNS.map((s, i) => [s, i]),
+) as Record<Status, number>;
 
 export const STATUS_LABELS: Record<Status, string> = {
   applied: "Applied",

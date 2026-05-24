@@ -1,13 +1,31 @@
 import axios from "axios";
-import type { Application, NewApplication, StageJourney } from "./types";
+import type {
+  Application,
+  ApplicationFilter,
+  NewApplication,
+  StageJourney,
+} from "./types";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
 });
 
-export const fetchApplications = async (): Promise<Application[]> => {
-  const { data } = await api.get<Application[]>("/api/applications");
+export const fetchApplications = async (
+  filter?: ApplicationFilter,
+): Promise<Application[]> => {
+  const { data } = await api.get<Application[]>("/api/applications", {
+    params: filter, // axios serializes this as ?company=...&from=...&to=...&sort_by=...&sort_dir=...
+  });
   return data;
+};
+
+export const fetchNotesByApplicationId = async (
+  applicationId: number,
+): Promise<string[]> => {
+  const { data } = await api.get<{ notes: string[] }>(
+    `/api/applications/${applicationId}/notes`,
+  );
+  return data.notes;
 };
 
 export const createApplication = async (

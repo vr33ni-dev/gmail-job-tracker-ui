@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Application, NewApplication } from "./types";
-import {
-  fetchApplications,
-  createApplication,
-  triggerSync,
-  IS_DEMO_MODE,
-} from "./api";
+import { fetchApplications, createApplication, triggerSync } from "./api";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { StatsBar } from "./components/StatsBar";
 import { AddModal } from "./components/AddModal";
@@ -101,17 +96,16 @@ export default function App() {
         </div>
         <button
           onClick={handleSync}
-          disabled={syncing || IS_DEMO_MODE}
-          title={IS_DEMO_MODE ? "Sync is disabled in demo mode" : undefined}
+          disabled={syncing}
           style={{
             background: "transparent",
             border: "1px solid var(--border)",
-            color: syncing || IS_DEMO_MODE ? "var(--muted)" : "var(--text)",
+            color: syncing ? "var(--muted)" : "var(--text)",
             borderRadius: "8px",
             padding: "8px 16px",
             fontSize: "12px",
             fontWeight: 600,
-            cursor: IS_DEMO_MODE ? "not-allowed" : "pointer",
+            cursor: syncing ? "not-allowed" : "pointer",
             fontFamily: "inherit",
             display: "flex",
             alignItems: "center",
@@ -146,23 +140,6 @@ export default function App() {
           + Add
         </button>
       </header>
-
-      {/* Demo banner */}
-      {IS_DEMO_MODE && (
-        <div
-          style={{
-            background: "rgba(91,141,238,0.12)",
-            borderBottom: "1px solid rgba(91,141,238,0.3)",
-            padding: "8px 32px",
-            fontSize: "12px",
-            color: "#5b8dee",
-            textAlign: "center",
-          }}
-        >
-          🎭 Demo mode — showing sample data. Connect a backend to track real
-          applications.
-        </div>
-      )}
 
       {/* Stats */}
       <div style={{ padding: "24px 32px 0" }}>

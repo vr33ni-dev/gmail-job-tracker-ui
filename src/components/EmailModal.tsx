@@ -125,7 +125,9 @@ export function EmailModal({
   const [journeys, setJourneys] = useState<StageJourney[] | null>(null);
   const [journeyError, setJourneyError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [openStage, setOpenStage] = useState<number | null>(null);
+  const [openStage, setOpenStage] = useState<number | null>(
+    stages.find((s) => s.needs_review)?.id ?? null,
+  );
   const [openConversations, setOpenConversations] = useState<Set<number>>(
     new Set(),
   );
@@ -137,9 +139,11 @@ export function EmailModal({
     stageId: number;
     wrongStatus: string;
     correctStatus: string;
-    action: "delete" | "correct";
+    action: "delete" | "correct" | "promote";
     rule: string;
     loading: boolean;
+    promoteEmail?: ThreadEmail;
+    promoteApplicationId?: number;
   };
   const [ruleModal, setRuleModal] = useState<RuleModalState | null>(null);
 
@@ -499,7 +503,7 @@ export function EmailModal({
                 )}
 
                 {/* Needs review banner */}
-                {!inferred && isStageOpen && appStage.needs_review && (
+                {isStageOpen && appStage.needs_review && (
                   <div
                     style={{
                       padding: "10px 14px",
@@ -672,8 +676,27 @@ export function EmailModal({
                                       const selectedStatus =
                                         promoteStatusByEmail[email.thread_id] ??
                                         appStage.status;
-                                      onPromote(email, app.id, selectedStatus);
-                                      onClose();
+                                      setRuleModal({
+                                        stageId: appStage.id,
+                                        wrongStatus: appStage.status,
+                                        correctStatus: selectedStatus,
+                                        action: "promote",
+                                        rule: "",
+                                        loading: true,
+                                        promoteEmail: email,
+                                        promoteApplicationId: app.id,
+                                      });
+                                      suggestRule(appStage.id, appStage.status, selectedStatus)
+                                        .then((rule: string) =>
+                                          setRuleModal((prev) =>
+                                            prev ? { ...prev, rule, loading: false } : null,
+                                          ),
+                                        )
+                                        .catch(() =>
+                                          setRuleModal((prev) =>
+                                            prev ? { ...prev, loading: false } : null,
+                                          ),
+                                        );
                                     }}
                                     style={{
                                       background: "none",
@@ -814,6 +837,8 @@ export function EmailModal({
                 onClick={() => {
                   if (ruleModal.action === "delete")
                     onDelete(ruleModal.stageId);
+                  else if (ruleModal.action === "promote")
+                    onPromote(ruleModal.promoteEmail!, ruleModal.promoteApplicationId!, ruleModal.correctStatus as Status);
                   else
                     onCorrect(
                       ruleModal.stageId,
@@ -832,7 +857,7 @@ export function EmailModal({
                   cursor: "pointer",
                 }}
               >
-                Skip, just {ruleModal.action === "delete" ? "remove" : "correct"}
+                Skip, just {ruleModal.action === "delete" ? "remove" : ruleModal.action === "promote" ? "promote" : "correct"}
               </button>
               <button
                 disabled={ruleModal.loading}
@@ -846,6 +871,8 @@ export function EmailModal({
                   }
                   if (ruleModal.action === "delete")
                     onDelete(ruleModal.stageId);
+                  else if (ruleModal.action === "promote")
+                    onPromote(ruleModal.promoteEmail!, ruleModal.promoteApplicationId!, ruleModal.correctStatus as Status);
                   else
                     onCorrect(
                       ruleModal.stageId,
@@ -866,7 +893,7 @@ export function EmailModal({
                 }}
               >
                 Add rule +{" "}
-                {ruleModal.action === "delete" ? "remove" : "correct"}
+                {ruleModal.action === "delete" ? "remove" : ruleModal.action === "promote" ? "promote" : "correct"}
               </button>
             </div>
           </div>

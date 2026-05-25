@@ -50,7 +50,7 @@ npm run build
 
 ## Live Demo
 
-👉 [https://vr33ni-dev.github.io/gmail-job-tracker](https://vr33ni-dev.github.io/gmail-job-tracker)
+👉 [https://vr33ni-dev.github.io/gmail-job-tracker-ui](https://vr33ni-dev.github.io/gmail-job-tracker-ui)
 
 The demo uses sample data — [set up the full version, using the backend](https://github.com/vr33ni-dev/gmail-job-tracker) to track your own applications.
 
